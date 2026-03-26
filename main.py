@@ -157,13 +157,19 @@ def format_gib(value_bytes):
     return f"{value_bytes / (1024 ** 3):.1f}G"
 
 
-def metric_card(draw, x, y, w, h, title, value_num, value_text, detail_text=""):
+def format_rate(value_bps):
+    if value_bps >= 1024 * 1024:
+        return f"{value_bps / (1024 * 1024):.1f}M"
+    if value_bps >= 1024:
+        return f"{value_bps / 1024:.0f}K"
+    return f"{value_bps:.0f}B"
+
+
+def metric_card(draw, x, y, w, h, title, value_num, value_text):
     color = usage_color(value_num)
     rounded_rect(draw, (x, y, x + w, y + h), radius=6, fill=color, outline=color)
     draw.text((x + 6, y + 4), title, fill=BLACK, font=FONT_XS_BOLD)
     draw.text((x + 6, y + 18), value_text, fill=BLACK, font=FONT_BIG)
-    if detail_text:
-        draw.text((x + 6, y + h - 14), detail_text, fill=BLACK, font=FONT_XS)
 
 
 def sparkline(draw, x, y, w, h, data, title, value_num, value_text="", max_value=100.0):
@@ -252,7 +258,7 @@ while True:
     G = 8
 
     header_h = 22
-    cards_h = 52
+    cards_h = 40
     info_h = 12
     bottom_h = 68
 
@@ -280,28 +286,8 @@ while True:
 
     # Top cards
     metric_card(draw, M, y, card_w, cards_h, "CPU", cpu, f"{cpu:3.0f}%")
-    metric_card(
-        draw,
-        M + card_w + G,
-        y,
-        card_w,
-        cards_h,
-        "RAM",
-        ram,
-        f"{ram:3.0f}%",
-        f"{format_gib(vm.used)}/{format_gib(vm.available)}",
-    )
-    metric_card(
-        draw,
-        M + 2 * (card_w + G),
-        y,
-        card_w,
-        cards_h,
-        "DISK",
-        disk,
-        f"{disk:3.0f}%",
-        f"{format_gib(disk_usage.used)}/{format_gib(disk_usage.free)}",
-    )
+    metric_card(draw, M + card_w + G, y, card_w, cards_h, "RAM", ram, f"{ram:3.0f}%")
+    metric_card(draw, M + 2 * (card_w + G), y, card_w, cards_h, "DISK", disk, f"{disk:3.0f}%")
     y += cards_h + G
 
     # Small info line
@@ -311,12 +297,42 @@ while True:
 
     # Graphs row 1
     sparkline(draw, M, y, graph_w, graph_h, cpu_hist, "CPU history", cpu, f"{cpu:3.0f}%")
-    sparkline(draw, M + graph_w + G, y, graph_w, graph_h, ram_hist, "RAM history", ram, f"{ram:3.0f}%")
+    sparkline(
+        draw,
+        M + graph_w + G,
+        y,
+        graph_w,
+        graph_h,
+        ram_hist,
+        "RAM history",
+        ram,
+        f"{ram:3.0f}% {format_gib(vm.used)}/{format_gib(vm.available)}",
+    )
     y += graph_h + G
 
     # Graphs row 2
-    sparkline(draw, M, y, graph_w, graph_h, disk_hist, "DISK history", disk, f"{disk:3.0f}%")
-    sparkline(draw, M + graph_w + G, y, graph_w, graph_h, net_hist, "NET load", net_load, f"{net_load:3.0f}%")
+    sparkline(
+        draw,
+        M,
+        y,
+        graph_w,
+        graph_h,
+        disk_hist,
+        "DISK history",
+        disk,
+        f"{disk:3.0f}% {format_gib(disk_usage.used)}/{format_gib(disk_usage.free)}",
+    )
+    sparkline(
+        draw,
+        M + graph_w + G,
+        y,
+        graph_w,
+        graph_h,
+        net_hist,
+        "NET load",
+        net_load,
+        f"{format_rate(rx_bps)}/{format_rate(tx_bps)}",
+    )
     y += graph_h + G
 
     # Bottom compact box
