@@ -153,11 +153,17 @@ def rounded_rect(draw, box, radius=7, outline=WHITE, fill=None, width=1):
     draw.rounded_rectangle(box, radius=radius, outline=outline, fill=fill, width=width)
 
 
-def metric_card(draw, x, y, w, h, title, value_num, value_text):
+def format_gib(value_bytes):
+    return f"{value_bytes / (1024 ** 3):.1f}G"
+
+
+def metric_card(draw, x, y, w, h, title, value_num, value_text, detail_text=""):
     color = usage_color(value_num)
     rounded_rect(draw, (x, y, x + w, y + h), radius=6, fill=color, outline=color)
     draw.text((x + 6, y + 4), title, fill=BLACK, font=FONT_XS_BOLD)
     draw.text((x + 6, y + 18), value_text, fill=BLACK, font=FONT_BIG)
+    if detail_text:
+        draw.text((x + 6, y + h - 14), detail_text, fill=BLACK, font=FONT_XS)
 
 
 def sparkline(draw, x, y, w, h, data, title, value_num, value_text="", max_value=100.0):
@@ -214,8 +220,10 @@ while True:
     now = time.time()
 
     cpu = float(psutil.cpu_percent(interval=None))
-    ram = float(psutil.virtual_memory().percent)
-    disk = float(psutil.disk_usage("/").percent)
+    vm = psutil.virtual_memory()
+    disk_usage = psutil.disk_usage("/")
+    ram = float(vm.percent)
+    disk = float(disk_usage.percent)
     temp = get_cpu_temp()
 
     net = psutil.net_io_counters()
@@ -244,7 +252,7 @@ while True:
     G = 8
 
     header_h = 22
-    cards_h = 40
+    cards_h = 52
     info_h = 12
     bottom_h = 68
 
@@ -272,8 +280,28 @@ while True:
 
     # Top cards
     metric_card(draw, M, y, card_w, cards_h, "CPU", cpu, f"{cpu:3.0f}%")
-    metric_card(draw, M + card_w + G, y, card_w, cards_h, "RAM", ram, f"{ram:3.0f}%")
-    metric_card(draw, M + 2 * (card_w + G), y, card_w, cards_h, "DISK", disk, f"{disk:3.0f}%")
+    metric_card(
+        draw,
+        M + card_w + G,
+        y,
+        card_w,
+        cards_h,
+        "RAM",
+        ram,
+        f"{ram:3.0f}%",
+        f"{format_gib(vm.used)}/{format_gib(vm.available)}",
+    )
+    metric_card(
+        draw,
+        M + 2 * (card_w + G),
+        y,
+        card_w,
+        cards_h,
+        "DISK",
+        disk,
+        f"{disk:3.0f}%",
+        f"{format_gib(disk_usage.used)}/{format_gib(disk_usage.free)}",
+    )
     y += cards_h + G
 
     # Small info line
