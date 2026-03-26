@@ -1,0 +1,6 @@
+psutil
+Pillow
+luma.core
+luma.lcd
+spidev
+RPi.GPIO

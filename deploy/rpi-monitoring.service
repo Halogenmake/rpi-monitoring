@@ -1,0 +1,16 @@
+[Unit]
+Description=Raspberry Pi Monitoring Display
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__DEPLOY_USER__
+WorkingDirectory=__WORKING_DIR__
+ExecStart=__DEPLOY_DIR__/.venv/bin/python __DEPLOY_DIR__/main.py
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
