@@ -31,12 +31,13 @@ The deploy script automatically installs missing OS packages required for the vi
 - `python3-dev`
 - `build-essential`
 - `swig`
+- `liblgpio-dev` or `lgpio` depending on the Raspberry Pi OS package name
 
 If you prefer to prepare the device manually, the equivalent command is:
 
 ```bash
 sudo apt update
-sudo apt install -y python3 python3-venv python3-pip python3-dev build-essential swig
+sudo apt install -y python3 python3-venv python3-pip python3-dev build-essential swig liblgpio-dev
 ```
 
 The runner user must be able to run `sudo` without interactive password prompts because deployment may install OS packages, write into `/etc/systemd/system`, and restart services.

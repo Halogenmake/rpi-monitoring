@@ -37,12 +37,33 @@ ensure_apt_packages() {
     sudo apt-get install -y "${missing[@]}"
 }
 
+install_first_available_apt_package() {
+    local candidate
+
+    for candidate in "$@"; do
+        if dpkg -s "$candidate" >/dev/null 2>&1; then
+            return
+        fi
+
+        if apt-cache show "$candidate" >/dev/null 2>&1; then
+            echo "Installing OS package: $candidate"
+            sudo apt-get update
+            sudo apt-get install -y "$candidate"
+            return
+        fi
+    done
+
+    echo "None of the required OS packages are available: $*" >&2
+    exit 1
+}
+
 require_command "$PYTHON_BIN"
 require_command sudo
 require_command systemctl
 require_command install
 require_command apt-get
 require_command dpkg
+require_command apt-cache
 
 if ! sudo -n true >/dev/null 2>&1; then
     echo "sudo without password is required for deployment" >&2
@@ -56,6 +77,8 @@ ensure_apt_packages \
     python3-dev \
     build-essential \
     swig
+
+install_first_available_apt_package liblgpio-dev lgpio
 
 if [[ ! -f "${WORKSPACE}/requirements.txt" ]]; then
     echo "requirements.txt not found in ${WORKSPACE}" >&2
