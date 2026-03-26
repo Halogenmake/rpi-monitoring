@@ -48,6 +48,7 @@ find "$DEPLOY_DIR" -mindepth 1 -maxdepth 1 \
 cp -a "$WORKSPACE/." "$DEPLOY_DIR/"
 rm -rf "${DEPLOY_DIR}/.git" "${DEPLOY_DIR}/.github" "${DEPLOY_DIR}/.idea"
 
+rm -rf "$VENV_DIR"
 "$PYTHON_BIN" -m venv "$VENV_DIR"
 "${VENV_DIR}/bin/pip" install --upgrade pip setuptools wheel
 "${VENV_DIR}/bin/pip" install -r "${DEPLOY_DIR}/requirements.txt"

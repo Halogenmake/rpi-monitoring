@@ -3,4 +3,4 @@ Pillow
 luma.core
 luma.lcd
 spidev
-RPi.GPIO
+rpi-lgpio

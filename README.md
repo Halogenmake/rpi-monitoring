@@ -40,6 +40,8 @@ sudo usermod -aG spi,gpio pi
 
 Re-login after changing group membership.
 
+For newer Raspberry Pi models and newer Raspberry Pi OS releases, the project uses `rpi-lgpio` instead of `RPi.GPIO` because `RPi.GPIO` may fail with errors like `Cannot determine SOC peripheral base address`.
+
 ### Workflow configuration
 
 Default deployment settings:
