@@ -18,15 +18,44 @@ require_command() {
     fi
 }
 
+ensure_apt_packages() {
+    local missing=()
+    local pkg
+
+    for pkg in "$@"; do
+        if ! dpkg -s "$pkg" >/dev/null 2>&1; then
+            missing+=("$pkg")
+        fi
+    done
+
+    if [[ ${#missing[@]} -eq 0 ]]; then
+        return
+    fi
+
+    echo "Installing missing OS packages: ${missing[*]}"
+    sudo apt-get update
+    sudo apt-get install -y "${missing[@]}"
+}
+
 require_command "$PYTHON_BIN"
 require_command sudo
 require_command systemctl
 require_command install
+require_command apt-get
+require_command dpkg
 
 if ! sudo -n true >/dev/null 2>&1; then
     echo "sudo without password is required for deployment" >&2
     exit 1
 fi
+
+ensure_apt_packages \
+    python3 \
+    python3-venv \
+    python3-pip \
+    python3-dev \
+    build-essential \
+    swig
 
 if [[ ! -f "${WORKSPACE}/requirements.txt" ]]; then
     echo "requirements.txt not found in ${WORKSPACE}" >&2

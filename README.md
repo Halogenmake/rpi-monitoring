@@ -23,14 +23,23 @@ On every push to `main` or `master`:
 
 ### Required prerequisites on the Raspberry Pi
 
-Install system packages once:
+The deploy script automatically installs missing OS packages required for the virtual environment and native Python builds:
+
+- `python3`
+- `python3-venv`
+- `python3-pip`
+- `python3-dev`
+- `build-essential`
+- `swig`
+
+If you prefer to prepare the device manually, the equivalent command is:
 
 ```bash
 sudo apt update
-sudo apt install -y python3 python3-venv python3-pip
+sudo apt install -y python3 python3-venv python3-pip python3-dev build-essential swig
 ```
 
-The runner user must be able to run `sudo systemctl` and write into `/etc/systemd/system` without interactive password prompts. The simplest approach is passwordless sudo for the runner user.
+The runner user must be able to run `sudo` without interactive password prompts because deployment may install OS packages, write into `/etc/systemd/system`, and restart services.
 
 If the application needs access to SPI/GPIO, make sure the service user is in the required groups, for example:
 
